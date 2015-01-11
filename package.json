@@ -6,14 +6,11 @@
   "scripts": {
     "test": "npm install && gulp"
   },
+
   "keywords": [
     "gulpplugin",
     "css2js"
   ],
-  "author": {
-    "name": "59naga"
-  },
-  "license": "MIT",
   "dependencies": {
     "coffee-script": "^1.8.0",
     "through": "^2.3.6"
@@ -21,5 +18,19 @@
   "devDependencies": {
     "gulp": "^3.8.10",
     "gulp-jasmine": "^1.0.1"
-  }
+  },
+
+  "author": {
+    "name": "59naga"
+  },
+  "license": "MIT",
+
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/59naga/gulp-jsfy.git"
+  },
+  "bugs": {
+    "url": "https://github.com/59naga/gulp-jsfy/issues"
+  },
+  "homepage": "https://github.com/59naga/gulp-jsfy"
 }
