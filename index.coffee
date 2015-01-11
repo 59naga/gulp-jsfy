@@ -7,7 +7,7 @@ module.exports= ->
 
     if file.path.substr(-4) is '.css'
       stylesheet= encodeURIComponent file.contents.toString()
-      filename= path.relative __dirname,file.path
+      filename= path.relative process.cwd(),file.path
       file.path+='.js'
       file.contents= new Buffer """
         (function(){
