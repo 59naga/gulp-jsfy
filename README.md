@@ -12,4 +12,5 @@ gulp.src main
       bowerJson:'bower.json'
   .pipe jsfy()
   .pipe concat 'bower_components.js'
+  .pipe gulp.dest 'public_html'
 ```
