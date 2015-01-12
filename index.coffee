@@ -55,7 +55,7 @@ replaceToDataURL= (file,callback,options={})->
       filename= path.resolve path.dirname(file.path),url.replace(/(#|\?).+/g,'')
       mimetype= mime.lookup filename
 
-      console.log filename,url
+      # console.log filename,url
 
       fs.readFile filename,(error,buffer)->
         next error if error?
