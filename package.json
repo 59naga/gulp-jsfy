@@ -1,30 +1,30 @@
 {
   "name": "gulp-jsfy",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "css to js (append style element)",
   "main": "index.coffee",
   "scripts": {
-    "test": "npm install && gulp"
+    "start": "npm install && gulp",
+    "test": "npm install && gulp test"
   },
-
   "keywords": [
     "gulpplugin",
     "css2js"
   ],
   "dependencies": {
+    "async": "^0.9.0",
     "coffee-script": "^1.8.0",
+    "mime": "^1.2.11",
     "through": "^2.3.6"
   },
   "devDependencies": {
     "gulp": "^3.8.10",
     "gulp-jasmine": "^1.0.1"
   },
-
   "author": {
     "name": "59naga"
   },
   "license": "MIT",
-
   "repository": {
     "type": "git",
     "url": "https://github.com/59naga/gulp-jsfy.git"
