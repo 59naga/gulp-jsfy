@@ -42,7 +42,9 @@ describe 'gulp-jsfy',->
 
   it 'replace url() to dataurl',(done)->
     gulp.src 'fixtures/*'
-      .pipe jsfy dataurl:true
+      .pipe jsfy
+        dataurl:true
+        ignoreURL:false
       .pipe gulp.dest 'fixtures'
       .on 'end',()->
         jsfied= fs.readFileSync("#{css}.js").toString()
@@ -50,9 +52,12 @@ describe 'gulp-jsfy',->
         expect(jsfied).toMatch encodeURIComponent 'data:image/png'
         
         done()
+        
   it 'ignore url(http[s]:)',(done)->
     gulp.src 'fixtures/*'
-      .pipe jsfy dataurl:true,ignoreURL:true
+      .pipe jsfy
+        dataurl:true
+        ignoreURL:true
       .pipe gulp.dest 'fixtures'
       .on 'end',()->
         jsfied= fs.readFileSync("#{css}.js").toString()
@@ -63,7 +68,10 @@ describe 'gulp-jsfy',->
 
   it 'wrap all selector into .filename{}',(done)->
     gulp.src 'fixtures/*'
-      .pipe jsfy dataurl:true,ignoreURL:true,wrapClassName:'test_'
+      .pipe jsfy
+        dataurl:true
+        ignoreURL:true
+        wrapClassName:'test_'
       .pipe gulp.dest 'fixtures'
       .on 'end',()->
         jsfied= fs.readFileSync("#{css}.js").toString()

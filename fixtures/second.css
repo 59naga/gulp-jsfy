@@ -5,10 +5,10 @@ body{
   background:url("./second.png") no-repeat center center;
 }
 body:before{
-  content:"1421056004306";
+  content:"1421058258962";
 }
 body:after{
-  content:"1421056004306";
+  content:"1421058258962";
   display:block;
   height:4em;
   background:url(http://berabou.me/bower_components/vectorizer/images/ootani_oniji_1x.png);

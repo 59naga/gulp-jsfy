@@ -8,7 +8,7 @@ jsfy= (file)->
     (function(){
       var style=document.createElement('style');
       style.setAttribute('title','#{filename}');
-      style.textContent=decodeURIComponent("#{encodeURIComponent file.contents.toString()}");
+      style.innerHTML=decodeURIComponent("#{encodeURIComponent file.contents.toString()}");
       document.head.appendChild(style);
     })();
   """
@@ -24,7 +24,7 @@ replaceToDataURL= (file,callback,options={})->
   # return callback "#{file.path} is jsfied css",css if css.indexOf '(function(){' is 0
 
   pattern= /url\((?!data:)(.+?)\)/
-  pattern= /url\((?!(?:data:|http))(.+?)\)/ if options.ignoreURL?
+  pattern= /url\((?!(?:data:|http))(.+?)\)/ if options.ignoreURL is true
 
   result= null
   async.whilst ()->
