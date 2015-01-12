@@ -2,12 +2,12 @@ through= require 'through'
 path= require 'path'
 
 jsfy= (file)->
-  filename= path.relative process.cwd(),file.path
+  name= path.basename file.path,'.css'
   file.path+='.js'
   file.contents= new Buffer """
     (function(){
       var link=document.createElement('link');
-      link.setAttribute('data-filename','#{filename}');
+      link.setAttribute('data-name','#{name}');
       link.setAttribute('rel','stylesheet');
       link.setAttribute('href',"data:text/css;base64,#{encodeURIComponent file.contents.toString('base64')}");
       document.head.appendChild(link);

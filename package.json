@@ -1,6 +1,6 @@
 {
   "name": "gulp-jsfy",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "css to js (append style element)",
   "main": "index.coffee",
   "scripts": {

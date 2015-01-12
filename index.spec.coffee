@@ -76,6 +76,8 @@ describe 'gulp-jsfy',->
       .on 'end',()->
         jsfied= fs.readFileSync("#{css}.js").toString()
 
+        path= require 'path'
         expect(jsfied.indexOf('.test_second'.toString('base64'))).toBeTruthy()
+        expect(jsfied.indexOf("'data-name','#{path.basename(css,'.css')}'")).toBeTruthy()
         
         done()
