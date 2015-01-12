@@ -6,10 +6,11 @@ jsfy= (file)->
   file.path+='.js'
   file.contents= new Buffer """
     (function(){
-      var style=document.createElement('style');
-      style.setAttribute('title','#{filename}');
-      style.innerHTML=decodeURIComponent("#{encodeURIComponent file.contents.toString()}");
-      document.head.appendChild(style);
+      var link=document.createElement('link');
+      link.setAttribute('data-filename','#{filename}');
+      link.setAttribute('rel','stylesheet');
+      link.setAttribute('href',"data:text/css;base64,#{encodeURIComponent file.contents.toString('base64')}");
+      document.head.appendChild(link);
     })();
   """
 

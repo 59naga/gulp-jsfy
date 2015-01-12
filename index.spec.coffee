@@ -36,7 +36,7 @@ describe 'gulp-jsfy',->
         jsfied= fs.readFileSync("#{css}.js").toString()
 
         # toMatch not working. https://github.com/jasmine/jasmine/issues/738
-        expect(jsfied.indexOf(encodeURIComponent(content))).toBeTruthy()
+        expect(jsfied.indexOf(content.toString('base64'))).toBeTruthy()
         
         done()
 
@@ -49,7 +49,7 @@ describe 'gulp-jsfy',->
       .on 'end',()->
         jsfied= fs.readFileSync("#{css}.js").toString()
 
-        expect(jsfied).toMatch encodeURIComponent 'data:image/png'
+        expect(jsfied.indexOf('data:image/png'.toString('base64'))).toBeTruthy()
         
         done()
         
@@ -62,7 +62,7 @@ describe 'gulp-jsfy',->
       .on 'end',()->
         jsfied= fs.readFileSync("#{css}.js").toString()
 
-        expect(jsfied).toMatch encodeURIComponent 'ootani_oniji_1x'
+        expect(jsfied.indexOf('ootani_oniji_1x'.toString('base64'))).toBeTruthy()
         
         done()
 
@@ -76,6 +76,6 @@ describe 'gulp-jsfy',->
       .on 'end',()->
         jsfied= fs.readFileSync("#{css}.js").toString()
 
-        expect(jsfied).toMatch encodeURIComponent '.test_second'
+        expect(jsfied.indexOf('.test_second'.toString('base64'))).toBeTruthy()
         
         done()
