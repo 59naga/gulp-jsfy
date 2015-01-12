@@ -19,15 +19,20 @@ fs= require 'fs'
 mime= require 'mime'
 http= require 'http'
 async= require 'async'
-replaceToDataURL= (file,callback)->
+replaceToDataURL= (file,callback,options={})->
   css= file.contents.toString()
+
+  pattern= /url\((?!data:)(.+?)\)/
+  pattern= /url\((?!(?:data:|http))(.+?)\)/ if options.ignoreURL?
 
   result= null
   async.whilst ()->
-    result= css.match /url\((?!data:)(.+?)\)/
+    result= css.match pattern
     result isnt null
   ,(next)->
-    [match,url]= result
+    [match,subpattern]= result
+
+    url= subpattern.replace /"|'/g,''
     if url.indexOf('http') is 0
       mimetype= null
 
@@ -38,7 +43,7 @@ replaceToDataURL= (file,callback)->
         response.on 'data',(buffer)->
           data= buffer.toString 'base64'
           dataurl= "data:#{mimetype};base64,#{data}"
-          css= css.replace url,dataurl
+          css= css.replace subpattern,dataurl
 
           # console.log buffer,url,"\n",buffer.length
 
@@ -46,7 +51,7 @@ replaceToDataURL= (file,callback)->
       .on 'error',(error)-> 
         next error
     else
-      filename= path.resolve path.dirname(file.path),url
+      filename= path.resolve path.dirname(file.path),url.replace /(#|\?).+/g,''
       mimetype= mime.lookup filename
 
       fs.readFile filename,(error,buffer)->
@@ -54,7 +59,7 @@ replaceToDataURL= (file,callback)->
 
         data= buffer.toString 'base64'
         dataurl= "data:#{mimetype};base64,#{data}"
-        css= css.replace url,dataurl
+        css= css.replace subpattern,dataurl
 
         # console.log buffer,filename,"\n",buffer.length
 
@@ -88,6 +93,7 @@ module.exports= (options={})->
 
             self.emit 'data',jsfy file
             next null
+          ,options
   ,->
     async.each queues,(queue,next)->
       queue (error)-> next error

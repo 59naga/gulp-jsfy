@@ -10,7 +10,7 @@ describe 'gulp-jsfy',->
       height:100%;
     }
     body{
-      background:url(./second.png) no-repeat center center;
+      background:url("./second.png") no-repeat center center;
     }
     body:before{
       content:"#{now}";
@@ -50,13 +50,24 @@ describe 'gulp-jsfy',->
         expect(jsfied).toMatch encodeURIComponent 'data:image/png'
         
         done()
-  # it 'ignore url(http[s]:)',(done)->
+  it 'ignore url(http[s]:)',(done)->
+    gulp.src 'fixtures/*'
+      .pipe jsfy dataurl:true,ignoreURL:true
+      .pipe gulp.dest 'fixtures'
+      .on 'end',()->
+        jsfied= fs.readFileSync("#{css}.js").toString()
+
+        expect(jsfied).toMatch encodeURIComponent 'ootani_oniji_1x'
+        
+        done()
+
+  # it 'wrap all selector into .filename{}',(done)->
   #   gulp.src 'fixtures/*'
-  #     .pipe jsfy dataurl:true,offline:true
+  #     .pipe jsfy dataurl:true,ignoreURL:true,wrapClassName:true
   #     .pipe gulp.dest 'fixtures'
   #     .on 'end',()->
   #       jsfied= fs.readFileSync("#{css}.js").toString()
 
-  #       expect(jsfied).toMatch encodeURIComponent 'ootani_oniji_1x'
+  #       expect(jsfied).toMatch encodeURIComponent '.second\{'
         
   #       done()
