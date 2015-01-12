@@ -21,6 +21,7 @@ http= require 'http'
 async= require 'async'
 replaceToDataURL= (file,callback,options={})->
   css= file.contents.toString()
+  # return callback "#{file.path} is jsfied css",css if css.indexOf '(function(){' is 0
 
   pattern= /url\((?!data:)(.+?)\)/
   pattern= /url\((?!(?:data:|http))(.+?)\)/ if options.ignoreURL?
@@ -51,8 +52,10 @@ replaceToDataURL= (file,callback,options={})->
       .on 'error',(error)-> 
         next error
     else
-      filename= path.resolve path.dirname(file.path),url.replace /(#|\?).+/g,''
+      filename= path.resolve path.dirname(file.path),url.replace(/(#|\?).+/g,'')
       mimetype= mime.lookup filename
+
+      console.log filename,url
 
       fs.readFile filename,(error,buffer)->
         next error if error?
@@ -69,7 +72,6 @@ replaceToDataURL= (file,callback,options={})->
 
 module.exports= (options={})->
   queues= []
-
   through (file)->
     self= this
 
@@ -79,6 +81,23 @@ module.exports= (options={})->
           self.emit 'data',file
           next null
         return
+
+      if options.wrapClassName
+        queues.push (next)=>
+          css= file.contents.toString()
+          className= path.basename file.path,'.css'
+          if typeof options.wrapClassName is 'string'
+            className= "#{options.wrapClassName}#{className}"
+
+          stylus= require 'stylus'
+          stylus.render ".#{className}{ #{css} }",(error,css)=>
+            return next error if error?  
+
+            file.contents= new Buffer css
+
+            # passed next queue
+            # self.emit 'data',jsfy file
+            next null
         
       if options.dataurl isnt true
         queues.push (next)=>

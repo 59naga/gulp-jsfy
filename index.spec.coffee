@@ -61,13 +61,13 @@ describe 'gulp-jsfy',->
         
         done()
 
-  # it 'wrap all selector into .filename{}',(done)->
-  #   gulp.src 'fixtures/*'
-  #     .pipe jsfy dataurl:true,ignoreURL:true,wrapClassName:true
-  #     .pipe gulp.dest 'fixtures'
-  #     .on 'end',()->
-  #       jsfied= fs.readFileSync("#{css}.js").toString()
+  it 'wrap all selector into .filename{}',(done)->
+    gulp.src 'fixtures/*'
+      .pipe jsfy dataurl:true,ignoreURL:true,wrapClassName:'test_'
+      .pipe gulp.dest 'fixtures'
+      .on 'end',()->
+        jsfied= fs.readFileSync("#{css}.js").toString()
 
-  #       expect(jsfied).toMatch encodeURIComponent '.second\{'
+        expect(jsfied).toMatch encodeURIComponent '.test_second'
         
-  #       done()
+        done()
