@@ -2,82 +2,77 @@ gulp= require 'gulp'
 jsfy= require './'
 fs= require 'fs'
 
-describe 'gulp-jsfy',->
-  css= 'fixtures/second.css'
-  now= Date.now()
-  content= """
-    html,body{
-      height:100%;
-    }
+createFixture= ->
+  """
     body{
+      height:100%;
       background:url("./second.png") no-repeat center center;
     }
     body:before{
-      content:"#{now}";
+      content:"#{Date.now()}";
     }
     body:after{
-      content:"#{now}";
+      content:"#{Date.now()}";
       display:block;
       height:4em;
-      background:url(http://berabou.me/bower_components/vectorizer/images/ootani_oniji_1x.png);
+      background:url('http://berabou.me/bower_components/vectorizer/images/ootani_oniji_1x.png');
     }
   """
 
+describe 'gulp-jsfy',->
+  fixture= 'fixtures/second.black.css'
+
+  contents= createFixture()
   beforeEach ->
     try
-      fs.writeFileSync css,content
-      fs.unlinkSync "#{css}.js" if fs.existsSync "#{css}.js"
+      fs.writeFileSync fixture,contents
+      fs.unlinkSync "#{fixture}.js" if fs.existsSync "#{fixture}.js"
 
   it 'only jsfy for .css',(done)->
+    options= {}
+
     gulp.src 'fixtures/*'
-      .pipe jsfy()
+      .pipe jsfy options
       .pipe gulp.dest 'fixtures'
       .on 'end',()->
-        jsfied= fs.readFileSync("#{css}.js").toString()
-
-        # toMatch not working. https://github.com/jasmine/jasmine/issues/738
-        expect(jsfied.indexOf(content.toString('base64'))).toBeTruthy()
-        
+        js= fs.readFileSync("#{fixture}.js").toString()
+        expect(js.toString()).not.toEqual(contents)
         done()
 
   it 'replace url() to dataurl',(done)->
+    options=
+      dataurl:true
+
     gulp.src 'fixtures/*'
-      .pipe jsfy
-        dataurl:true
-        ignoreURL:false
+      .pipe jsfy options
       .pipe gulp.dest 'fixtures'
       .on 'end',()->
-        jsfied= fs.readFileSync("#{css}.js").toString()
-
-        expect(jsfied.indexOf('data:image/png'.toString('base64'))).toBeTruthy()
-        
+        js= fs.readFileSync("#{fixture}.js").toString()
+        expect(jsfy.cssfy js).toMatch('data:image/png;base64')
         done()
         
   it 'ignore url(http[s]:)',(done)->
+    options=
+      dataurl:true
+      ignoreURL:true
+      
     gulp.src 'fixtures/*'
-      .pipe jsfy
-        dataurl:true
-        ignoreURL:true
+      .pipe jsfy options
       .pipe gulp.dest 'fixtures'
       .on 'end',()->
-        jsfied= fs.readFileSync("#{css}.js").toString()
-
-        expect(jsfied.indexOf('ootani_oniji_1x'.toString('base64'))).toBeTruthy()
-        
+        js= fs.readFileSync("#{fixture}.js").toString()
+        expect(jsfy.cssfy js).toMatch('berabou.me')
         done()
 
-  it 'wrap all selector into .filename{}',(done)->
+  it 'wrap all selector into .file_name{}',(done)->
+    options=
+      dataurl:true
+      wrapInClass:'test_'
+
     gulp.src 'fixtures/*'
-      .pipe jsfy
-        dataurl:true
-        ignoreURL:true
-        wrapClassName:'test_'
+      .pipe jsfy options
       .pipe gulp.dest 'fixtures'
       .on 'end',()->
-        jsfied= fs.readFileSync("#{css}.js").toString()
-
-        path= require 'path'
-        expect(jsfied.indexOf('.test_second'.toString('base64'))).toBeTruthy()
-        expect(jsfied.indexOf("'data-name','#{path.basename(css,'.css')}'")).toBeTruthy()
-        
+        js= fs.readFileSync("#{fixture}.js").toString()
+        expect(jsfy.cssfy js).toMatch('.second_black')
         done()

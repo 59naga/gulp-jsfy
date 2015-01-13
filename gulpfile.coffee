@@ -6,6 +6,6 @@ gulp.task 'default',->
 gulp.task 'test',->
   gulp.src '*.spec.coffee'
     .pipe require('gulp-jasmine')
+      timeout:3000
       verbose:true
-      timeout:1000
-      includeStackTrace:true
+      # includeStackTrace:true

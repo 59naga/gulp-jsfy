@@ -1,123 +1,173 @@
-through= require 'through'
 path= require 'path'
+jsfy= (options={})->
+  queues= []
+  through= require 'through'
+  through (file)->
+    return this.emit 'data',file if file.path.substr(-4) isnt '.css'
 
-jsfy= (file)->
-  name= path.basename file.path,'.css'
-  file.path+='.js'
-  file.contents= new Buffer """
+    queues.push (next)=>
+      jsfy.parse file,options,(error,js)=>
+        return next error if error?
+
+        file.path+= '.js'
+        file.contents= new Buffer js
+        this.emit 'data',file
+
+        next null
+  ,->
+    async= require 'async'
+    async.parallel queues,(error)=>
+      throw error if error?
+
+      this.emit 'end'
+
+jsfy.parse= (file,args...)->
+  callback= undefined
+  options= undefined
+  args.forEach (arg)-> switch typeof arg
+    when 'function' then callback= arg
+    when 'object' then options= arg
+
+  deval= (error,file)=>
+    return callback error if error?
+
+    name= path.basename(file.path,'.css')
+
+    if options.dataurl
+      jsfy.replaceToDataURI file,options,(error,css)->
+        return callback error if error?
+
+        file.contents= new Buffer css
+
+        callback null,jsfy.deval file,name
+    else
+      callback null,jsfy.deval file,name
+
+  if options.wrapInClass
+    jsfy.wrap file,options,(error,css)=>
+      return deval error if error?
+
+      file.contents= new Buffer css
+
+      deval null,file
+  else
+    deval null,file
+
+jsfy.deval= (css,name=null)->
+  change= require 'change-case'
+  """
     (function(){
       var link=document.createElement('link');
-      link.setAttribute('data-name','#{name}');
+      link.setAttribute('data-name','#{change.snakeCase(name)}');
       link.setAttribute('rel','stylesheet');
-      link.setAttribute('href',"data:text/css;base64,#{encodeURIComponent file.contents.toString('base64')}");
+      link.setAttribute('href',"#{jsfy.dataurify css,'text/css'}");
       document.head.appendChild(link);
     })();
   """
 
-  file
+jsfy.cssfy= (devalJs)->
+  begin= devalJs.indexOf 'data:text/css;base64,'
+  end= devalJs.indexOf('"',begin) - begin
+  dataurl= (new Buffer devalJs.substr(begin,end),'base64').toString('utf8')
+  (new Buffer devalJs.substr(begin,end).split(',')[1],'base64').toString()
+  
+jsfy.dataurify= (str,mime,charset='')->
+  data= if typeof str is 'object' then str.contents else new Buffer str
+  charset= ";#{charset}" if charset.length > 0 and charset.indexOf(';') isnt 0
+  "data:#{mime};#{charset}base64,#{data.toString('base64')}"
 
-fs= require 'fs'
-mime= require 'mime'
-http= require 'http'
-async= require 'async'
-replaceToDataURL= (file,callback,options={})->
-  css= file.contents.toString()
-  # return callback "#{file.path} is jsfied css",css if css.indexOf '(function(){' is 0
+jsfy.replaceLocalPattern= ///
+# only match: url("./path/to/file.ext")
+url\(
+  (?!(["']?(data|http)))
+  .+?
+\)
+///g
+jsfy.replaceGlobalPattern= ///
+# add match: url('http://berabou.me/.../ootani_oniji_1x.png')
+url\(
+  (?!(["']?(data)))
+  .+?
+\)
+///g
+jsfy.replaceToDataURI= (file,args...)->
+  callback= undefined
+  pattern= undefined
+  options= {}
+  args.forEach (arg)-> switch typeof arg
+    when 'function' then callback= arg
+    when 'string' then pattern= arg
+    when 'object' then options= arg
 
-  pattern= /url\((?!data:)(.+?)\)/
-  pattern= /url\((?!(?:data:|http))(.+?)\)/ if options.ignoreURL is true
+  if pattern is undefined
+    pattern= if options.ignoreURL then jsfy.replaceLocalPattern else jsfy.replaceGlobalPattern
 
-  result= null
-  async.whilst ()->
-    result= css.match pattern
-    result isnt null
-  ,(next)->
-    [match,subpattern]= result
+  str= file.contents.toString()
+  hogekosan= null
+  matches= str.match(pattern) || []
 
-    url= subpattern.replace /"|'/g,''
-    if url.indexOf('http') is 0
-      mimetype= null
+  async= require 'async'
+  async.map matches,(match,next)->
+    begin= match.indexOf('(')+1
+    end= match.length-begin-1
+    schema= match.substr(begin,end).replace /"|'/g,''
 
-      http.get url,(response)->
-        # response.setEncoding 'binary'
-        mimetype=  response?.headers?['content-type']
+    is_local= schema.indexOf('http') isnt 0
+    schema= path.resolve path.dirname(file.path),schema if is_local
 
-        response.on 'data',(buffer)->
-          data= buffer.toString 'base64'
-          dataurl= "data:#{mimetype};base64,#{data}"
-          css= css.replace subpattern,dataurl
-
-          # console.log buffer,url,"\n",buffer.length
-
-          next null
-      .on 'error',(error)-> 
+    if is_local
+      jsfy.readDataURI schema,(error,datauri)->
+        str= str.replace match,"url(#{datauri})"
         next error
     else
-      filename= path.resolve path.dirname(file.path),url.replace(/(#|\?).+/g,'')
-      mimetype= mime.lookup filename
+      jsfy.fetchDataURI schema,(error,datauri)->
+        str= str.replace match,"url(#{datauri})"
+        next error
 
-      # console.log filename,url
-
-      fs.readFile filename,(error,buffer)->
-        next error if error?
-
-        data= buffer.toString 'base64'
-        dataurl= "data:#{mimetype};base64,#{data}"
-        css= css.replace subpattern,dataurl
-
-        # console.log buffer,filename,"\n",buffer.length
-
-        next null
   ,(error)->
+    callback error,str
+
+jsfy.readDataURI= (filename,callback)->
+  fs= require 'fs'
+  fs.readFile filename,(error,buffer)->
+    if error is null
+      mime= require('mime').lookup filename
+      data= buffer.toString 'base64'
+
+      callback null,"data:#{mime};base64,#{data}"
+    else
+      callback error
+
+jsfy.fetchDataURI= (url,callback)->
+  http= require 'http'
+  http.get url,(response)->
+    response.on 'data',(buffer)->
+      mime=  response?.headers?['content-type']
+      data= buffer.toString 'base64'
+
+      callback null,"data:#{mime};base64,#{data}"
+  .on 'error',(error)-> 
+    callback error
+
+jsfy.wrap= (file,args...)->
+  callback= undefined
+  className= undefined
+  options= {}
+  args.forEach (arg)-> switch typeof arg
+    when 'function' then callback= arg
+    when 'string' then className= arg
+    when 'object' then options= arg
+
+  change= require 'change-case'
+  css= file.contents.toString()
+  className= change.snakeCase(path.basename file.path,'.css')
+
+  # example: 
+  #   css= html{...},body{...}
+  #   stylus.render ".className{ css }""
+  #     -> ".className html{...} .className body{...}"
+  stylus= require 'stylus'
+  stylus.render ".#{className}{ #{css} }",(error,css)->
     callback error,css
 
-module.exports= (options={})->
-  queues= []
-  through (file)->
-    self= this
-
-    do (self,file)=>
-      if file.path.substr(-4) isnt '.css'
-        queues.push (next)=>
-          self.emit 'data',file
-          next null
-        return
-
-      if options.wrapClassName
-        queues.push (next)=>
-          css= file.contents.toString()
-          className= path.basename file.path,'.css'
-          if typeof options.wrapClassName is 'string'
-            className= "#{options.wrapClassName}#{className}"
-
-          stylus= require 'stylus'
-          stylus.render ".#{className}{ #{css} }",(error,css)=>
-            return next error if error?  
-
-            file.contents= new Buffer css
-
-            # passed next queue
-            # self.emit 'data',jsfy file
-            next null
-        
-      if options.dataurl isnt true
-        queues.push (next)=>
-          self.emit 'data',jsfy file
-          next null
-      else
-        queues.push (next)=>
-          replaceToDataURL file,(error,css)=>
-            next error if error?
-
-            file.contents= new Buffer css
-
-            self.emit 'data',jsfy file
-            next null
-          ,options
-  ,->
-    async.each queues,(queue,next)->
-      queue (error)-> next error
-    ,(error)=>
-      throw error if error?
-
-      this.emit 'end'
+module.exports= jsfy

@@ -15,7 +15,7 @@ gulp.task 'default',->
     .pipe jsfy
       dataurl:true
       ignoreURL:false #optional
-      wrapClassName:false #optional
+      wrapInClass:false #optional try conflict resolve
     .pipe concat 'bower_components.js'
     .pipe gulp.dest 'public_html'
 ```
