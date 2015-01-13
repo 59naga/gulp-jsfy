@@ -1,7 +1,7 @@
 {
   "name": "gulp-jsfy",
-  "version": "0.1.0",
-  "description": "css to js (append style element)",
+  "version": "0.1.1",
+  "description": "css to js (append link element)",
   "main": "index.coffee",
   "scripts": {
     "start": "npm install && gulp",
@@ -9,7 +9,8 @@
   },
   "keywords": [
     "gulpplugin",
-    "css2js"
+    "css2js",
+    "main-bower-files"
   ],
   "dependencies": {
     "async": "^0.9.0",
