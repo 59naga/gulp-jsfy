@@ -39,9 +39,9 @@ jsfy.parse= (file,args...)->
 
         file.contents= new Buffer css
 
-        callback null,jsfy.deval file,name
+        callback null,jsfy.deval file,name,options
     else
-      callback null,jsfy.deval file,name
+      callback null,jsfy.deval file,name,options
 
   if options.wrapInClass
     jsfy.wrap file,options,(error,css)=>
@@ -49,33 +49,42 @@ jsfy.parse= (file,args...)->
 
       file.contents= new Buffer css
 
-      deval null,file
+      deval null,file,null,options
   else
-    deval null,file
+    deval null,file,null,options
 
-jsfy.deval= (css,name=null)->
+jsfy.deval= (css,args...)->
+  name= undefined
+  charset= 'utf8'
+  options= {}
+  args.forEach (arg)-> switch typeof arg
+    when 'string' then name= arg
+    when 'object' then options= arg
+
+  charset= '' if options.charset is false
+
   change= require 'change-case'
   """
     (function(){
       var link=document.createElement('link');
       link.setAttribute('data-name','#{change.snakeCase(name)}');
       link.setAttribute('rel','stylesheet');
-      link.setAttribute('href',"#{jsfy.dataurify css,'text/css'}");
+      link.setAttribute('href',"#{jsfy.dataurify css,'text/css',charset}");
       document.head.appendChild(link);
     })();
   """
 
+jsfy.dataurify= (str,mime,charset='')->
+  data= if typeof str is 'object' then str.contents else new Buffer str
+  charset= ";charset=#{charset}" if charset.length > 0 and charset.indexOf(';') isnt 0
+  "data:#{mime}#{charset};base64,#{data.toString('base64')}"
+
 jsfy.cssfy= (devalJs)->
-  begin= devalJs.indexOf 'data:text/css;base64,'
+  begin= devalJs.indexOf 'data:text/css;'
   end= devalJs.indexOf('"',begin) - begin
   dataurl= (new Buffer devalJs.substr(begin,end),'base64').toString('utf8')
   (new Buffer devalJs.substr(begin,end).split(',')[1],'base64').toString()
   
-jsfy.dataurify= (str,mime,charset='')->
-  data= if typeof str is 'object' then str.contents else new Buffer str
-  charset= ";#{charset}" if charset.length > 0 and charset.indexOf(';') isnt 0
-  "data:#{mime};#{charset}base64,#{data.toString('base64')}"
-
 jsfy.replaceLocalPattern= ///
 # only match: url("./path/to/file.ext")
 url\(
@@ -103,7 +112,6 @@ jsfy.replaceToDataURI= (file,args...)->
     pattern= if options.ignoreURL then jsfy.replaceLocalPattern else jsfy.replaceGlobalPattern
 
   str= file.contents.toString()
-  hogekosan= null
   matches= str.match(pattern) || []
 
   async= require 'async'
@@ -116,6 +124,7 @@ jsfy.replaceToDataURI= (file,args...)->
     schema= path.resolve path.dirname(file.path),schema if is_local
 
     if is_local
+      schema= schema.replace /(\?#\w+|#\w+)$/,'' # fix: slick-carousel.css > url("./fonts/slick.eot?#iefix")
       jsfy.readDataURI schema,(error,datauri)->
         str= str.replace match,"url(#{datauri})"
         next error

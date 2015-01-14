@@ -6,13 +6,13 @@ createFixture= ->
   """
     body{
       height:100%;
-      background:url("./second.png") no-repeat center center;
+      background:url("./second.png?#iefix") no-repeat center center;
     }
     body:before{
-      content:"#{Date.now()}";
+      content:"←";
     }
     body:after{
-      content:"#{Date.now()}";
+      content:"→";
       display:block;
       height:4em;
       background:url('http://berabou.me/bower_components/vectorizer/images/ootani_oniji_1x.png');
