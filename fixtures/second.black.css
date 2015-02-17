@@ -1,12 +1,12 @@
 body{
   height:100%;
-  background:url("./second.png") no-repeat center center;
+  background:url("./second.png?#iefix") no-repeat center center;
 }
 body:before{
-  content:"1421113951651";
+  content:"←";
 }
 body:after{
-  content:"1421113951651";
+  content:"→";
   display:block;
   height:4em;
   background:url('http://berabou.me/bower_components/vectorizer/images/ootani_oniji_1x.png');

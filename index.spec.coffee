@@ -1,5 +1,5 @@
 gulp= require 'gulp'
-jsfy= require './'
+jsfy= require './index.js'
 fs= require 'fs'
 
 createFixture= ->

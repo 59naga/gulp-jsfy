@@ -31,7 +31,7 @@ jsfy.parse= (file,args...)->
   deval= (error,file)=>
     return callback error if error?
 
-    name= path.basename(file.path,'.css')
+    name= path.basename file.path,'.css'
 
     if options.dataurl
       jsfy.replaceToDataURI file,options,(error,css)->
