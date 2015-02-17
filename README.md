@@ -1,6 +1,6 @@
 # gulp-jsfy  [![NPM version][npm-image]][npm] [![Build Status][travis-image]][travis]
 
-is [gulp-plugin](https://github.com/gulpjs/gulp#gulp) for concatable js
+is [gulp-plugin](https://github.com/gulpjs/gulp#gulp) for standalone css
 
 ## Installation
 ```bash
@@ -23,7 +23,7 @@ gulp.task 'default',->
 
 ## Plugin Options
 * dataurl:`false`
-  * `true`: Replace `url(relative/URL)` to `url(datauri)`
+  * `true`: Replace `url(relative/URL)` to `url(DATAURI)`
 * ignoreURL:`false`
   * `true`: Don't Replace `url(URL)`
 * wrapInClass:`false`
@@ -32,10 +32,11 @@ gulp.task 'default',->
 [1]: https://github.com/59naga/gulp-jsfy-example
 
 ## How do transform to .js ?
-It's transform .css into `&gt;link href="dataurl"&lt;`.js
+It's transform .css into `<link href="DATAURI">`.js And resolve `url()` references.
+Becomes css is standalone.
 
 ### Example
-[animate.css](http://daneden.github.io/animate.css/)]
+[animate.css](http://daneden.github.io/animate.css/)
 
 ```css
 @charset "UTF-8";
