@@ -1,32 +1,34 @@
 {
   "name": "gulp-jsfy",
-  "version": "0.1.4",
+  "main": "gulp-jsfy",
   "description": "css to js (append link element)",
-  "main": "index.js",
+  "version": "0.1.5-rc.0",
+
   "scripts": {
-    "start": "npm install && gulp",
-    "test": "gulp test"
+    "test": "jasminetea . --verbose --timeout 5000"
   },
+
+  "dependencies": {
+    "async": "^0.9.0",
+    "change-case": "^2.2.0",
+    "coffee-script": "^1.8.0",
+    "gulp-util": "^3.0.4",
+    "mime": "^1.2.11",
+    "stylus": "^0.50.0",
+    "through2": "^0.6.5"
+  },
+  "devDependencies": {
+    "gulp": "^3.8.10",
+    "jasminetea": "^0.1.27"
+  },
+
   "keywords": [
     "gulpplugin",
     "css2js",
     "main-bower-files"
   ],
-  "dependencies": {
-    "async": "^0.9.0",
-    "change-case": "^2.2.0",
-    "coffee-script": "^1.8.0",
-    "mime": "^1.2.11",
-    "stylus": "^0.49.3",
-    "through": "^2.3.6"
-  },
-  "devDependencies": {
-    "gulp": "^3.8.10",
-    "gulp-jasmine": "^1.0.1"
-  },
-  "author": {
-    "name": "59naga"
-  },
+  
+  "author": "59naga <i59naga@icloud.com> (http://berabou.me)",
   "license": "MIT",
   "repository": {
     "type": "git",

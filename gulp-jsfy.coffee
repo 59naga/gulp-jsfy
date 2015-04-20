@@ -1,25 +1,31 @@
+fs= require 'fs'
 path= require 'path'
+http= require 'http'
+
+through2= require 'through2'
+
+async= require 'async'
+change= require 'change-case'
+mime= require 'mime'
+stylus= require 'stylus'
+
+gutil= require 'gulp-util'
+
 jsfy= (options={})->
-  queues= []
-  through= require 'through'
-  through (file)->
-    return this.emit 'data',file if file.path.substr(-4) isnt '.css'
+  through2.obj (file,encode,next)->
+    return @emit 'error',new gutil.PluginError 'gulp-jsfy','Streaming not supported' if file.isStream()
+    if file.path.substr(-4) isnt '.css'
+      @push file
+      return next()
 
-    queues.push (next)=>
-      jsfy.parse file,options,(error,js)=>
-        return next error if error?
+    jsfy.parse file,options,(error,js)=>
+      return @emit 'error',new gutil.PluginError 'gulp-jsfy',error if error?
 
-        file.path+= '.js'
-        file.contents= new Buffer js
-        this.emit 'data',file
+      file.path+= '.js'
+      file.contents= new Buffer js
+      @push file
 
-        next null
-  ,->
-    async= require 'async'
-    async.parallel queues,(error)=>
-      throw error if error?
-
-      this.emit 'end'
+      next()
 
 jsfy.parse= (file,args...)->
   callback= undefined
@@ -63,9 +69,8 @@ jsfy.deval= (css,args...)->
 
   charset= '' if options.charset is false
 
-  change= require 'change-case'
   """
-    (function(){
+    ;(function(){
       var link=document.createElement('link');
       link.setAttribute('data-name','#{change.snakeCase(name)}');
       link.setAttribute('rel','stylesheet');
@@ -74,10 +79,10 @@ jsfy.deval= (css,args...)->
     })();
   """
 
-jsfy.dataurify= (str,mime,charset='')->
+jsfy.dataurify= (str,type,charset='')->
   data= if typeof str is 'object' then str.contents else new Buffer str
   charset= ";charset=#{charset}" if charset.length > 0 and charset.indexOf(';') isnt 0
-  "data:#{mime}#{charset};base64,#{data.toString('base64')}"
+  "data:#{type}#{charset};base64,#{data.toString('base64')}"
 
 jsfy.cssfy= (devalJs)->
   begin= devalJs.indexOf 'data:text/css;'
@@ -114,7 +119,6 @@ jsfy.replaceToDataURI= (file,args...)->
   str= file.contents.toString()
   matches= str.match(pattern) || []
 
-  async= require 'async'
   async.map matches,(match,next)->
     begin= match.indexOf('(')+1
     end= match.length-begin-1
@@ -137,24 +141,23 @@ jsfy.replaceToDataURI= (file,args...)->
     callback error,str
 
 jsfy.readDataURI= (filename,callback)->
-  fs= require 'fs'
   fs.readFile filename,(error,buffer)->
     if error is null
-      mime= require('mime').lookup filename
+      type= mime.lookup filename
       data= buffer.toString 'base64'
 
-      callback null,"data:#{mime};base64,#{data}"
+      callback null,"data:#{type};base64,#{data}"
     else
       callback error
 
 jsfy.fetchDataURI= (url,callback)->
-  http= require 'http'
   http.get url,(response)->
+    chunks= ''
     response.on 'data',(buffer)->
-      mime=  response?.headers?['content-type']
-      data= buffer.toString 'base64'
-
-      callback null,"data:#{mime};base64,#{data}"
+      chunks+= buffer.toString()
+    response.on 'end',->
+      type= response?.headers?['content-type']
+      callback null,"data:#{type};base64,#{(new Buffer chunks).toString('base64')}"
   .on 'error',(error)-> 
     callback error
 
@@ -167,7 +170,6 @@ jsfy.wrap= (file,args...)->
     when 'string' then className= arg
     when 'object' then options= arg
 
-  change= require 'change-case'
   css= file.contents.toString()
   className= change.snakeCase(path.basename file.path,'.css')
 
@@ -175,7 +177,6 @@ jsfy.wrap= (file,args...)->
   #   css= html{...},body{...}
   #   stylus.render ".className{ css }""
   #     -> ".className html{...} .className body{...}"
-  stylus= require 'stylus'
   stylus.render ".#{className}{ #{css} }",(error,css)->
     callback error,css
 
