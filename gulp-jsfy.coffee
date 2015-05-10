@@ -29,7 +29,7 @@ jsfy= (options={})->
 
 jsfy.parse= (file,args...)->
   callback= undefined
-  options= undefined
+  options= {}
   args.forEach (arg)-> switch typeof arg
     when 'function' then callback= arg
     when 'object' then options= arg

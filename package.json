@@ -2,7 +2,7 @@
   "name": "gulp-jsfy",
   "main": "gulp-jsfy",
   "description": "css to js (append link element)",
-  "version": "0.1.5-rc.0",
+  "version": "0.1.5-rc.1",
 
   "scripts": {
     "test": "jasminetea . --verbose --timeout 5000"
