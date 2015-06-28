@@ -1,4 +1,4 @@
-# gulp-jsfy  [![NPM version][npm-image]][npm] [![Build Status][travis-image]][travis]
+# gulp-jsfy [![NPM version][npm-image]][npm] [![Build Status][travis-image]][travis]
 
 is [gulp-plugin](https://github.com/gulpjs/gulp#gulp) for standalone css
 

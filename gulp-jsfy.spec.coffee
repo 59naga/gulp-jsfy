@@ -17,6 +17,9 @@ createFixture= ->
       height:4em;
       background:url('http://berabou.me/bower_components/vectorizer/images/ootani_oniji_1x.png');
     }
+    section{
+      background:url("./second.png?3ocs8m") no-repeat center center;
+    }
   """
 
 describe 'gulp-jsfy',->

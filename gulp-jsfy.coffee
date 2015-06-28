@@ -128,7 +128,7 @@ jsfy.replaceToDataURI= (file,args...)->
     schema= path.resolve path.dirname(file.path),schema if is_local
 
     if is_local
-      schema= schema.replace /(\?#\w+|#\w+)$/,'' # fix: slick-carousel.css > url("./fonts/slick.eot?#iefix")
+      [schema,qs]= schema.split '?' # fix: slick-carousel.css > url("./fonts/slick.eot?#iefix")
       jsfy.readDataURI schema,(error,datauri)->
         str= str.replace match,"url(#{datauri})"
         next error
