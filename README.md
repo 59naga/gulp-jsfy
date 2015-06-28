@@ -1,6 +1,6 @@
 # gulp-jsfy [![NPM version][npm-image]][npm] [![Build Status][travis-image]][travis]
 
-is [gulp-plugin](https://github.com/gulpjs/gulp#gulp) for standalone css
+> transform .css to .js append to &lt;head&gt;
 
 ## Installation
 ```bash
@@ -26,10 +26,14 @@ gulp.task 'default',->
   * `true`: Replace `url(relative/URL)` to `url(DATAURI)`
 * ignoreURL:`false`
   * `true`: Don't Replace `url(URL)`
+  
+<!--
+### Deprecated
 * wrapInClass:`false`
   * `true`: (Experimental) Wrap all selector into the .className{} [e.g.][1]
 
 [1]: https://github.com/59naga/gulp-jsfy-example
+-->
 
 ## How do transform to .js ?
 It's transform .css into `<link href="DATAURI">`.js And resolve `url()` references.
@@ -81,9 +85,11 @@ Become animate.css.js
 })();
 ```
 
-# License
-MIT by [@59naga](https://twitter.com/horse_n_deer)
+License
+=========================
+[MIT][license]
 
+[license]: http://59naga.mit-license.org/
 [npm-image]: https://badge.fury.io/js/gulp-jsfy.svg
 [npm]: https://npmjs.org/package/gulp-jsfy
 [travis-image]: https://travis-ci.org/59naga/gulp-jsfy.svg?branch=master

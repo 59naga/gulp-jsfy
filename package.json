@@ -1,11 +1,11 @@
 {
   "name": "gulp-jsfy",
   "main": "gulp-jsfy",
-  "description": "css to js (append link element)",
-  "version": "0.1.5",
+  "description": "transform .css to .js append to <head>",
+  "version": "0.1.6-alpha",
 
   "scripts": {
-    "test": "jasminetea . --verbose --timeout 5000"
+    "test": "jasminetea . --timeout 5000"
   },
 
   "dependencies": {
@@ -19,12 +19,13 @@
   },
   "devDependencies": {
     "gulp": "^3.8.10",
-    "jasminetea": "^0.1.27"
+    "jasminetea": "^0.2.1"
   },
 
   "keywords": [
     "gulpplugin",
-    "css2js",
+    "css",
+    "base64",
     "main-bower-files"
   ],
   
