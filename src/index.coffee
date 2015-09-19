@@ -13,7 +13,9 @@ gutil= require 'gulp-util'
 
 jsfy= (options={})->
   through2.obj (file,encode,next)->
-    return @emit 'error',new gutil.PluginError 'gulp-jsfy','Streaming not supported' if file.isStream()
+    if file.isStream()
+      return @emit 'error',new gutil.PluginError 'gulp-jsfy','Streaming not supported'
+
     if file.path.substr(-4) isnt '.css'
       @push file
       return next()
@@ -34,7 +36,7 @@ jsfy.parse= (file,args...)->
     when 'function' then callback= arg
     when 'object' then options= arg
 
-  deval= (error,file)=>
+  deval= (error,file)->
     return callback error if error?
 
     name= path.basename file.path,'.css'
@@ -50,7 +52,7 @@ jsfy.parse= (file,args...)->
       callback null,jsfy.deval file,name,options
 
   if options.wrapInClass
-    jsfy.wrap file,options,(error,css)=>
+    jsfy.wrap file,options,(error,css)->
       return deval error if error?
 
       file.contents= new Buffer css
@@ -117,7 +119,7 @@ jsfy.replaceToDataURI= (file,args...)->
     pattern= if options.ignoreURL then jsfy.replaceLocalPattern else jsfy.replaceGlobalPattern
 
   str= file.contents.toString()
-  matches= str.match(pattern) || []
+  matches= str.match(pattern) or []
 
   async.map matches,(match,next)->
     begin= match.indexOf('(')+1
@@ -160,7 +162,7 @@ jsfy.fetchDataURI= (url,callback)->
     response.on 'end',->
       type= response?.headers?['content-type']
       callback null,"data:#{type};base64,#{(new Buffer chunks).toString('base64')}"
-  .on 'error',(error)-> 
+  .on 'error',(error)->
     callback error
 
 jsfy.wrap= (file,args...)->
@@ -175,7 +177,7 @@ jsfy.wrap= (file,args...)->
   css= file.contents.toString()
   className= change.snakeCase(path.basename file.path,'.css')
 
-  # example: 
+  # example:
   #   css= html{...},body{...}
   #   stylus.render ".className{ css }""
   #     -> ".className html{...} .className body{...}"

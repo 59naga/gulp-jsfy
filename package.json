@@ -1,21 +1,28 @@
 {
   "name": "gulp-jsfy",
-  "main": "gulp-jsfy",
   "description": "transform .css to .js append to <head>",
-  "version": "0.1.6-alpha",
+  "version": "0.1.6-beta",
 
+  "files": [
+    "index.js",
+    "lib"
+  ],
   "scripts": {
-    "test": "jasminetea . --timeout 5000"
+    "start": "jasminetea --watch",
+    "test": "jasminetea --cover --report --lint",
+
+    "prepublish": "node -e \"if(process.env.TRAVIS){}else{process.exit(1)}\" && npm run compile || echo skip prepublish",
+    "compile": "coffee --bare --compile index.coffee",
+    "postcompile": "coffee --output lib --bare --compile src"
   },
 
   "dependencies": {
-    "async": "^0.9.0",
+    "async": "^1.4.2",
     "change-case": "^2.2.0",
-    "coffee-script": "^1.8.0",
     "gulp-util": "^3.0.4",
     "mime": "^1.2.11",
-    "stylus": "^0.50.0",
-    "through2": "^0.6.5"
+    "stylus": "^0.52.4",
+    "through2": "^2.0.0"
   },
   "devDependencies": {
     "gulp": "^3.8.10",

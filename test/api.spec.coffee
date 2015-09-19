@@ -1,5 +1,5 @@
 gulp= require 'gulp'
-jsfy= require './'
+jsfy= require '../src'
 fs= require 'fs'
 
 createFixture= ->
@@ -26,21 +26,23 @@ createFixture= ->
   """
 
 describe 'gulp-jsfy',->
-  fixture= 'fixtures/second.black.css'
+  fixture= __dirname+'/fixtures/second.black.css'
 
   contents= createFixture()
   beforeEach ->
     try
       fs.writeFileSync fixture,contents
+  afterEach ->
+    try
       fs.unlinkSync "#{fixture}.js" if fs.existsSync "#{fixture}.js"
 
   it 'only jsfy for .css',(done)->
     options= {}
 
-    gulp.src 'fixtures/*'
+    gulp.src __dirname+'/fixtures/*'
       .pipe jsfy options
-      .pipe gulp.dest 'fixtures'
-      .on 'end',()->
+      .pipe gulp.dest __dirname+'/fixtures'
+      .on 'end',->
         js= fs.readFileSync("#{fixture}.js").toString()
         expect(js.toString()).not.toEqual(contents)
         done()
@@ -49,10 +51,10 @@ describe 'gulp-jsfy',->
     options=
       dataurl:true
 
-    gulp.src 'fixtures/*'
+    gulp.src __dirname+'/fixtures/*'
       .pipe jsfy options
-      .pipe gulp.dest 'fixtures'
-      .on 'end',()->
+      .pipe gulp.dest __dirname+'/fixtures'
+      .on 'end',->
         js= fs.readFileSync("#{fixture}.js").toString()
         expect(jsfy.cssfy js).toMatch('data:image/png;base64')
         done()
@@ -62,10 +64,10 @@ describe 'gulp-jsfy',->
       dataurl:true
       ignoreURL:true
       
-    gulp.src 'fixtures/*'
+    gulp.src __dirname+'/fixtures/*'
       .pipe jsfy options
-      .pipe gulp.dest 'fixtures'
-      .on 'end',()->
+      .pipe gulp.dest __dirname+'/fixtures'
+      .on 'end',->
         js= fs.readFileSync("#{fixture}.js").toString()
         expect(jsfy.cssfy js).toMatch('berabou.me')
         done()
@@ -75,10 +77,10 @@ describe 'gulp-jsfy',->
       dataurl:true
       wrapInClass:'test_'
 
-    gulp.src 'fixtures/*'
+    gulp.src __dirname+'/fixtures/*'
       .pipe jsfy options
-      .pipe gulp.dest 'fixtures'
-      .on 'end',()->
+      .pipe gulp.dest __dirname+'/fixtures'
+      .on 'end',->
         js= fs.readFileSync("#{fixture}.js").toString()
         expect(jsfy.cssfy js).toMatch('.second_black')
         done()
